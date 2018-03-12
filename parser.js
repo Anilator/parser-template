@@ -1,4 +1,14 @@
 module.exports = {
+    getRegexCaptures (string, regex, callback) {
+        let matches, result = [];
+
+        while ((matches = regex.exec(string)) !== null) {
+            if (matches.index === regex.lastIndex) regex.lastIndex++; // This is necessary to avoid infinite loops with zero-width matches
+            callback (matches.splice(1), result);
+        }
+
+        return result;
+    },
     createParser (templateString) { // makes a Regexp with a property contains a list of Template fields (Captures)
         const template = (typeof templateString == 'string') ? templateString : '';
         let parser = createRegex (template);
