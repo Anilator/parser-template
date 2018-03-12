@@ -67,26 +67,24 @@ module.exports = {
 
 
     ////////////// USEFUL FUNCTIONS //////////////
-    stringifyVal (value) { // creates a string from any JS type
+    stringifyVal (val) { // creates a string from any JS type
         if ((typeof val === 'undefined') || (val === null)) return '';
-
         if ((typeof val === 'boolean') || (typeof val === 'number') || (typeof val === 'string'))
             return val + '';
 
         if (val instanceof Array) return val.join(', ');
-
         if ((typeof val === 'symbol') || (typeof val === 'function')) return val.toString();
 
         return JSON.stringify (val);
     },
     fillTemplate (object, parser) { // creates a string from an object according to a Parser's template
+        const stringify = this.stringifyVal.bind (this);
 
         return parser.captures.reduce (insertValueToTemplate, parser.template);
 
         function insertValueToTemplate (template, prop) {
             let regex = new RegExp ('<.*>[\\s\\S]*?<'+ prop +'>', 'g');
-            let data = this.stringifyVal (object[prop]);
-
+            let data = stringify (object[prop]);
             return template.replace(regex, data);
         }
     },
@@ -96,6 +94,6 @@ module.exports = {
     },
     filterObject (sourceObj, parser) { // filters only properties enlisted in a Parser
 
-        return Object.assign (...parser.captures.map( prop => {[prop]: sourceObj[prop] } ) );
+        return Object.assign (...parser.captures.map( prop => ({[prop]: sourceObj[prop]}) ) );
     },
 }
