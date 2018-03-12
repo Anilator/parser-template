@@ -1,5 +1,18 @@
 module.exports = {
-    getRegexCaptures (string, regex, callback) {
+    ////////////// COMMON //////////////
+    removeDuplicates (arr) { // [1,2,2,3,4,5,1]   ==>   [1,2,3,4,5]
+
+        return arr.filter ((el, pos, a) => (a.indexOf(el) == pos) && el );
+    },
+    prettifyList (input) { // ",a, b ,,b   ,,  c,d,d,"   ==>   [a, b, c, d]
+        let arr = input
+            .split (',')
+            .filter (s => s != '')
+            .map (s => s.trim());
+
+        return this.removeDuplicates (arr);
+    },
+    getRegexCaptures (string, regex, callback) { // "abcde" + /b(.*)e/   ==>   ["cd"]
         let matches, result = [];
 
         while ((matches = regex.exec(string)) !== null) {
@@ -9,6 +22,9 @@ module.exports = {
 
         return result;
     },
+
+
+    ////////////// PARSER //////////////
     createParser (templateString) { // makes a Regexp with a property contains a list of Template fields (Captures)
         const template = (typeof templateString == 'string') ? templateString : '';
         let parser = createRegex (template);
@@ -48,20 +64,38 @@ module.exports = {
 
         return (result.length == 1)? result[0]: result;
     },
-    stringifyObj (object, parser) { // creates a string from an object according to a Parser's template
 
-        return parser.captures.reduce (insertValuesToTemplate, parser.template);
 
-        function insertValuesToTemplate (template, prop) {
+    ////////////// USEFUL FUNCTIONS //////////////
+    stringifyVal (value) { // creates a string from any JS type
+        if ((typeof val === 'undefined') || (val === null)) return '';
+
+        if ((typeof val === 'boolean') || (typeof val === 'number') || (typeof val === 'string'))
+            return val + '';
+
+        if (val instanceof Array) return val.join(', ');
+
+        if ((typeof val === 'symbol') || (typeof val === 'function')) return val.toString();
+
+        return JSON.stringify (val);
+    },
+    fillTemplate (object, parser) { // creates a string from an object according to a Parser's template
+
+        return parser.captures.reduce (insertValueToTemplate, parser.template);
+
+        function insertValueToTemplate (template, prop) {
             let regex = new RegExp ('<.*>[\\s\\S]*?<'+ prop +'>', 'g');
-            let data = object[prop];
-            if (data instanceof Array) data = data.join(', ');
+            let data = this.stringifyVal (object[prop]);
 
             return template.replace(regex, data);
         }
     },
-    stringifyArr (base, parser) { // creates a string from an array of objects according to a Parser's template
+    fillTemplatesArray (array, parser) { // creates a string from an array of objects according to a Parser's template
 
-        return base.reduce ( (acc, record) => acc + this.stringifyObj (record, parser), '');
+        return array.reduce ( (acc, record) => acc + this.fillTemplate (record, parser), '');
+    },
+    filterObject (sourceObj, parser) { // filters only properties enlisted in a Parser
+
+        return Object.assign (...parser.captures.map( prop => {[prop]: sourceObj[prop] } ) );
     },
 }
