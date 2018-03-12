@@ -1,0 +1,25 @@
+{
+  "name": "parser-template",
+  "version": "1.0.0",
+  "description": "a parser for texts by a template",
+  "main": "parser.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Anilator/parser-template.git"
+  },
+  "keywords": [
+    "function",
+    "no-dependencies",
+    "parser",
+    "template"
+  ],
+  "author": "Evgenii Klimov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Anilator/parser-template/issues"
+  },
+  "homepage": "https://github.com/Anilator/parser-template#readme"
+}
