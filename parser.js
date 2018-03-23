@@ -39,7 +39,13 @@ module.exports = class Parser {
     }
     stringify (data) { // fills a template string by an array of data objects
         if (data instanceof Array) {
-            return data.reduce ( (acc, record) => acc + this.fillTemplate (record), '');
+            return data.reduce ( (acc, record) => {
+                    let pad = record.$indent;
+                    let result = this.fillTemplate (record);
+                    return acc + (pad ? this.indent (pad, result) : result);
+                }, 
+                ""
+            );
         } else {
             return this.fillTemplate (data);
         }
@@ -91,5 +97,9 @@ module.exports = class Parser {
     filterObject (dataObject) { // filters only properties enlisted in a Parser
 
         return Object.assign (...this.captures.map( prop => ({[prop]: dataObject[prop]}) ) );
+    }
+    indent (tabwidth, string) {
+        let padding = Array (tabwidth).join ('  ');
+        return string.split ('\n').map (l => padding + l).join ('\n') + '\n';
     }
 }

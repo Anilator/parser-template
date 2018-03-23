@@ -1,6 +1,8 @@
-# Sublime project files
+# IDE workspaces
 *.sublime-project
 *.sublime-workspace
+*.code-workspace
+.vscode
 
 # Logs
 logs

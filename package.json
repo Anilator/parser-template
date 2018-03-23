@@ -1,6 +1,6 @@
 {
   "name": "parser-template",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "description": "a parser for texts by a template",
   "main": "parser.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Anilator/parser-template.git"
+    "url": "git+https://github.com/klimcode/parser-template.git"
   },
   "keywords": [
     "function",
@@ -16,10 +16,10 @@
     "parser",
     "template"
   ],
-  "author": "Evgenii Klimov",
+  "author": "John Klimov",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Anilator/parser-template/issues"
+    "url": "https://github.com/klimcode/parser-template/issues"
   },
-  "homepage": "https://github.com/Anilator/parser-template#readme"
+  "homepage": "https://github.com/klimcode/parser-template#readme"
 }
