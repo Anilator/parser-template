@@ -6,14 +6,19 @@ module.exports = class Parser {
         this.template = template; // Stores template string parser for future purposes
         this.captures = this.getRegexCaptures ( // an array of names of template data fields
             template,
-            /<m>[\s\S]*?<(\w+)>|<>.*<(\w+)>/g,
+            /<m>[\s\S]*?<(\w+)>|<[u|l]?>.*<(\w+)>/g,
             (matches, result) => result.push (matches[0] || matches[1])
+        );
+        this.modifiers = this.getRegexCaptures ( // an array of types of template data fields: multi-line, uppercase, lowercase
+            template,
+            /<(.)?>[\s\S]*?<\w+>/g,
+            (matches, result) => result.push (matches[0])
         );
 
         function createRegex (template) {
             let mask = template
                 .replace (/<m>[\s\S]*?<\w+>/g, '([\\s\\S]*?)')  // a multi-line field
-                .replace (/<>.*<\w+>/g, '(.*)')          // a single-line field
+                .replace (/<[u|l]?>.*<\w+>/g, '(.*)')          // a single-line field
 
             return new RegExp (mask, 'g');
         }
@@ -26,7 +31,7 @@ module.exports = class Parser {
                 let record = Object.assign (...this.captures.map ( (prop, i) => {  // makes Obj from 2 Arrays
                     let match = matches[i]
                         .replace(/<m>([\s\S]*?)<\w+>/g, '$1')
-                        .replace(/<>(.*)<\w+>/g, '$1')
+                        .replace(/<[u|l]?>(.*)<\w+>/g, '$1')
                     return { [prop]: match };
                 }) );
 
@@ -37,14 +42,15 @@ module.exports = class Parser {
 
         return result;
     }
-    stringify (data) { // fills a template string by an array of data objects
+    stringify (data, postprocess) { // fills a template string by an array of data objects
         if (data instanceof Array) {
             return data.reduce ( (acc, record) => {
-                    let pad = record.$indent;
+                    const params = record.modifier;
                     let result = this.fillTemplate (record);
-                    return acc + (pad ? this.indent (pad, result) : result);
+                    if (postprocess) result = postprocess (result, params);
+                    return acc + result;
                 }, 
-                ""
+                ''
             );
         } else {
             return this.fillTemplate (data);
@@ -89,17 +95,20 @@ module.exports = class Parser {
     fillTemplate (dataObject) { // creates a string from an object according to a Parser's template
         const stringify = this.stringifyVal.bind (this);
         const captures = this.captures;
+        const modifiers = this.modifiers;
 
-        let reg = new RegExp ('([\\s\\S]*?)'+ captures.map(c => `<m?>.*<${c}>`).join('([\\s\\S]*?)') +'([\\s\\S]*?)');
-        let rep = '$1'+ captures.reduce ((acc, prop, i) => (acc + stringify (dataObject[prop]) +'$'+ (i+2)), '');
+        let reg = new RegExp ('([\\s\\S]*?)'+ captures.map(c => `<.?>.*<${c}>`).join('([\\s\\S]*?)') +'([\\s\\S]*?)');
+        let rep = '$1'+ captures.reduce ((acc, prop, i) => {
+            let data = stringify (dataObject[prop]);
+            let mod = modifiers[i];
+            if (mod === 'u') data = data.toUpperCase();
+            if (mod === 'l') data = data.toLowerCase();
+            return acc + data +'$'+ (i+2);
+        }, '');
         return this.template.replace (reg, rep);
     }
     filterObject (dataObject) { // filters only properties enlisted in a Parser
 
         return Object.assign (...this.captures.map( prop => ({[prop]: dataObject[prop]}) ) );
-    }
-    indent (tabwidth, string) {
-        let padding = Array (tabwidth).join ('  ');
-        return string.split ('\n').map (l => padding + l).join ('\n') + '\n';
     }
 }
