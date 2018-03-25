@@ -17,8 +17,9 @@ module.exports = class Parser {
 
         function createRegex (template) {
             let mask = template
+                .replace (/[-[\]{}()*+?.^$|#]/g, '\\$&')       // escaping special chars
                 .replace (/<m>[\s\S]*?<\w+>/g, '([\\s\\S]*?)')  // a multi-line field
-                .replace (/<[u|l]?>.*<\w+>/g, '(.*)')          // a single-line field
+                .replace (/<[u|l]?>.*<\w+>/g, '(.*)');          // a single-line field
 
             return new RegExp (mask, 'g');
         }
