@@ -19,7 +19,7 @@ module.exports = class Parser {
             let mask = template
                 .replace (/[-[\]{}()*+?.^$|#]/g, '\\$&')       // escaping special chars
                 .replace (/<m>[\s\S]*?<\w+>/g, '([\\s\\S]*?)')  // a multi-line field
-                .replace (/<[u|l]?>.*<\w+>/g, '(.*)');          // a single-line field
+                .replace (/<[u|l]?>.*<\w+>/g, '(.*)')          // a single-line field
 
             return new RegExp (mask, 'g');
         }
@@ -104,12 +104,24 @@ module.exports = class Parser {
             let mod = modifiers[i];
             if (mod === 'u') data = data.toUpperCase();
             if (mod === 'l') data = data.toLowerCase();
+
             return acc + data +'$'+ (i+2);
         }, '');
         return this.template.replace (reg, rep);
     }
     filterObject (dataObject) { // filters only properties enlisted in a Parser
+        const captures = this.captures;
+        const modifiers = this.modifiers;
 
-        return Object.assign (...this.captures.map( prop => ({[prop]: dataObject[prop]}) ) );
+        return Object.assign (...captures.map ((prop, i) => {
+            let data = dataObject[prop];
+            if (typeof data === 'string') {
+                let mod = modifiers[i];
+                if (mod === 'u') data = data.toUpperCase();
+                if (mod === 'l') data = data.toLowerCase();
+            }
+
+            return { [prop]: data };
+        }));
     }
 }

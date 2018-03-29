@@ -1,6 +1,6 @@
 {
   "name": "parser-template",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "a parser for texts by a template",
   "main": "parser.js",
   "scripts": {
