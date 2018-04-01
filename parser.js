@@ -7,12 +7,12 @@ module.exports = class Parser {
         this.captures = this.getRegexCaptures ( // an array of names of template data fields
             template,
             /<m>[\s\S]*?<(\w+)>|<[u|l]?>.*<(\w+)>/g,
-            (matches, result) => result.push (matches[0] || matches[1])
+            (matches, result) => result.push (matches[1] || matches[2])
         );
         this.modifiers = this.getRegexCaptures ( // an array of types of template data fields: multi-line, uppercase, lowercase
             template,
             /<(.)?>[\s\S]*?<\w+>/g,
-            (matches, result) => result.push (matches[0])
+            (matches, result) => result.push (matches[1])
         );
 
         function createRegex (template) {
@@ -29,12 +29,15 @@ module.exports = class Parser {
             string,
             this.regex,
             (matches, result) => {
-                let record = Object.assign (...this.captures.map ( (prop, i) => {  // makes Obj from 2 Arrays
-                    let match = matches[i]
+                const captures = this.captures;
+                let record = {};
+                for (let i=0; i<captures.length; i++) {
+                    const prop = captures[i];
+                    const value = matches[i+1]
                         .replace(/<m>([\s\S]*?)<\w+>/g, '$1')
-                        .replace(/<[u|l]?>(.*)<\w+>/g, '$1')
-                    return { [prop]: match };
-                }) );
+                        .replace(/<[u|l]?>(.*)<\w+>/g, '$1');
+                    record[prop] = value;
+                }
 
                 result.push (record);
             }
@@ -78,7 +81,7 @@ module.exports = class Parser {
 
         while ((matches = regex.exec(string)) !== null) {
             if (matches.index === regex.lastIndex) regex.lastIndex++; // This is necessary to avoid infinite loops with zero-width matches
-            callback (matches.splice(1), result);
+            callback (matches, result);
         }
 
         return result;
